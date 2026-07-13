@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [dev]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      # M17: cache de dependências pip — evita re-download a cada run
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('pyproject.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: pip install -e ".[dev]"
+
+      - name: Lint (ruff)
+        run: ruff check .
+
+      # M18: type checking — verifica que os type hints estão corretos
+      - name: Type check (mypy)
+        run: mypy pipelines/finance_data_pipelines/core pipelines/finance_data_pipelines/sources pipelines/finance_data_pipelines/jobs --ignore-missing-imports
+
+      # M16: testes com cobertura mínima de 70%
+      - name: Run tests with coverage
+        run: pytest pipelines/finance_data_pipelines/tests/unit/ -v --cov=pipelines.finance_data_pipelines --cov-report=term-missing --cov-fail-under=70

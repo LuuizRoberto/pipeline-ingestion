@@ -1,0 +1,61 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "data-fpa-risk"
+version = "0.1.0"
+description = "ETL pipelines para ingestão de dados financeiros (FP&A & Risco)"
+requires-python = ">=3.10"
+
+dependencies = [
+    # Google Cloud
+    "google-cloud-secret-manager",
+    "google-cloud-bigquery",
+    "google-cloud-storage",
+    "google-cloud-datastore",
+    "google-auth",
+    # HTTP
+    "requests",
+    "urllib3",
+    # Databricks
+    "databricks-sdk",
+    # Utilities
+    "python-dateutil",
+    "python-dotenv",
+    "pytz",
+    "chardet",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+    "mypy",
+    "ruff",
+]
+
+# Instalação editável (pip install -e .) expõe o pacote pipelines.finance_data_pipelines,
+# resolvendo os imports por caminho completo em dev, testes e scripts locais.
+# No Databricks (DBR 14.3+) a raiz da Git folder já entra no sys.path automaticamente.
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["pipelines*"]
+exclude = ["pipelines.finance_data_pipelines.tests*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint.per-file-ignores]
+"pipelines/finance_data_pipelines/tests/**"             = ["E501"]  # strings de patch() com caminhos longos são aceitáveis em testes
+"pipelines/finance_data_pipelines/sources/**/config/**" = ["E501"]  # URLs, endpoints e paths longos são inevitáveis em configs
+"pipelines/finance_data_pipelines/jobs/validation/**"   = ["E501"]  # mensagens de log com contexto rico podem ultrapassar 100 chars
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]
+
+[tool.pytest.ini_options]
+testpaths = ["pipelines/finance_data_pipelines/tests"]
+python_files = ["test_*.py"]

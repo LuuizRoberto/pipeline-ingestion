@@ -1,0 +1,6 @@
+# Configuração do projeto Dataform (BigQuery). Ajuste antes do primeiro `dataform run`.
+# Docs: https://cloud.google.com/dataform/docs
+defaultProject: data-prod-295413
+defaultDataset: avenue_finance
+defaultLocation: US
+dataformCoreVersion: 3.0.0
